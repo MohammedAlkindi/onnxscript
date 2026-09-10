@@ -27,7 +27,8 @@ def main(args) -> None:
     # TODO: Remove this hack by fixing the optimizer to handle external data files properly.
     pwd = os.getcwd()
     model_dir = os.path.dirname(path)
-    os.chdir(model_dir)
+    if model_dir:
+        os.chdir(model_dir)
     model = onnxscript.optimizer.optimize(model)
     model = onnx.inliner.inline_local_functions(model)
     # Optimize again in case inlining created new opportunities.
