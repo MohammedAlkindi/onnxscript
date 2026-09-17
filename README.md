@@ -60,7 +60,7 @@ pip install --upgrade onnxscript
 git clone https://github.com/microsoft/onnxscript
 cd onnxscript
 pip install -r requirements-dev.txt
-pip install -e .
+pip install -e . --no-deps
 ```
 
 ### Run Unit Tests
