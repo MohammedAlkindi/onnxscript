@@ -1109,6 +1109,19 @@ class TorchLibe2eTest(unittest.TestCase):
         onnx_program = torch.onnx.export(Model(), (x,), dynamo=True, verbose=False)
         _testing.assert_onnx_program(onnx_program)
 
+    def test_quantize_per_tensor_clamps_to_quant_min_max(self):
+        # quant_min/quant_max are narrower than the int8 range, so values must be
+        # clamped to [0, 20] to match the PyTorch reference semantics.
+        class Model(torch.nn.Module):
+            def forward(self, x):
+                return torch.ops.quantized_decomposed.quantize_per_tensor(
+                    x, 1.0, 0, 0, 20, torch.int8
+                )
+
+        x = torch.tensor([-50.0, -1.0, 0.0, 5.0, 20.0, 25.0, 100.0, 3.0])
+        onnx_program = torch.onnx.export(Model(), (x,), dynamo=True, verbose=False)
+        _testing.assert_onnx_program(onnx_program)
+
     def test_dequantize_per_channel_int8(self):
         class Model(torch.nn.Module):
             def forward(self, q):

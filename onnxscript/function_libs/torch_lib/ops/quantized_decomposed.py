@@ -38,7 +38,14 @@ def quantized_decomposed_quantize_per_tensor(
     dtype: int,
 ) -> TensorType:
     # TODO(justinchuby): Use dtype when we use opset 21
-    return op.QuantizeLinear(input, scale, common.constant(zero_point, dtype=dtype))
+    quantized = op.QuantizeLinear(input, scale, common.constant(zero_point, dtype=dtype))
+    # QuantizeLinear saturates to the full range of ``dtype``. PyTorch clamps to the
+    # explicit ``quant_min``/``quant_max`` instead, so clamp to match its semantics.
+    return op.Clip(
+        quantized,
+        common.constant(quant_min, dtype=dtype),
+        common.constant(quant_max, dtype=dtype),
+    )
 
 
 @torch_op(
